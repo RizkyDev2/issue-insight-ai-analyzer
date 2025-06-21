@@ -6,6 +6,7 @@ import { AdminPage } from '../components/AdminPage';
 import { HistoryPage } from '../components/HistoryPage';
 import { LoginPage } from '../components/LoginPage';
 import { AuthProvider, useAuth } from '../hooks/useAuth';
+import { ThemeProvider } from '../hooks/useTheme';
 
 const AppContent: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -35,9 +36,11 @@ const AppContent: React.FC = () => {
 
 const Index = () => {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
 
