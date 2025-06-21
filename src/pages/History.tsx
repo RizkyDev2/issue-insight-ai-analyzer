@@ -1,33 +1,32 @@
 
 import React from 'react';
 import { Layout } from '../components/Layout';
-import { PredictPage } from '../components/PredictPage';
-import { LoginPage } from '../components/LoginPage';
+import { HistoryPage } from '../components/HistoryPage';
 import { AuthProvider, useAuth } from '../hooks/useAuth';
 import { ThemeProvider } from '../hooks/useTheme';
 
-const AppContent: React.FC = () => {
+const HistoryContent: React.FC = () => {
   const { isAuthenticated } = useAuth();
 
   if (!isAuthenticated) {
-    return <LoginPage />;
+    return <div>Please login to access history</div>;
   }
 
   return (
     <Layout>
-      <PredictPage />
+      <HistoryPage />
     </Layout>
   );
 };
 
-const Index = () => {
+const History = () => {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <AppContent />
+        <HistoryContent />
       </AuthProvider>
     </ThemeProvider>
   );
 };
 
-export default Index;
+export default History;
