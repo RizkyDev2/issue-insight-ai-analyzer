@@ -5,8 +5,10 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Brain, Mail, Lock, User } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 
 export const LoginPage: React.FC = () => {
+  const { login } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
@@ -14,10 +16,44 @@ export const LoginPage: React.FC = () => {
     password: '',
     confirmPassword: ''
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    setError('');
+    setIsLoading(true);
+
+    try {
+      if (!isLogin) {
+        // Registration validation
+        if (!formData.name.trim()) {
+          throw new Error('Nama lengkap wajib diisi');
+        }
+        if (formData.password !== formData.confirmPassword) {
+          throw new Error('Password dan konfirmasi password tidak sama');
+        }
+        if (formData.password.length < 6) {
+          throw new Error('Password minimal 6 karakter');
+        }
+      }
+
+      if (!formData.email.trim()) {
+        throw new Error('Email wajib diisi');
+      }
+      if (!formData.password.trim()) {
+        throw new Error('Password wajib diisi');
+      }
+
+      // For now, we'll use the mock login function for both login and registration
+      await login(formData.email, formData.password);
+      
+      console.log(isLogin ? 'Login berhasil' : 'Registrasi berhasil');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Terjadi kesalahan');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -25,6 +61,8 @@ export const LoginPage: React.FC = () => {
       ...prev,
       [e.target.name]: e.target.value
     }));
+    // Clear error when user starts typing
+    if (error) setError('');
   };
 
   return (
@@ -48,6 +86,12 @@ export const LoginPage: React.FC = () => {
         </CardHeader>
         
         <CardContent>
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+              <p className="text-red-600 text-sm">{error}</p>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <div className="space-y-2">
@@ -121,14 +165,27 @@ export const LoginPage: React.FC = () => {
               </div>
             )}
             
-            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
-              {isLogin ? 'Masuk' : 'Daftar'}
+            <Button 
+              type="submit" 
+              className="w-full bg-blue-600 hover:bg-blue-700"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Memproses...' : (isLogin ? 'Masuk' : 'Daftar')}
             </Button>
           </form>
           
           <div className="mt-6 text-center">
             <button
-              onClick={() => setIsLogin(!isLogin)}
+              onClick={() => {
+                setIsLogin(!isLogin);
+                setError('');
+                setFormData({
+                  name: '',
+                  email: '',
+                  password: '',
+                  confirmPassword: ''
+                });
+              }}
               className="text-blue-600 hover:text-blue-700 text-sm font-medium"
             >
               {isLogin 
