@@ -1,4 +1,4 @@
-
+//Frontend/src/components/LoginPage.tsx
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
@@ -25,30 +25,33 @@ export const LoginPage: React.FC = () => {
     setIsLoading(true);
 
     try {
+      if (!formData.email.trim()) throw new Error('Email wajib diisi');
+      if (!formData.password.trim()) throw new Error('Password wajib diisi');
+
       if (!isLogin) {
-        // Registration validation
-        if (!formData.name.trim()) {
-          throw new Error('Nama lengkap wajib diisi');
-        }
-        if (formData.password !== formData.confirmPassword) {
-          throw new Error('Password dan konfirmasi password tidak sama');
-        }
-        if (formData.password.length < 6) {
-          throw new Error('Password minimal 6 karakter');
-        }
+        if (!formData.name.trim()) throw new Error('Nama lengkap wajib diisi');
+        if (formData.password !== formData.confirmPassword) throw new Error('Password dan konfirmasi tidak sama');
+        if (formData.password.length < 6) throw new Error('Password minimal 6 karakter');
+
+        const res = await fetch('https://sturdy-space-enigma-x54x9jrq74wx26jwv-5000.app.github.dev/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: formData.name,
+            email: formData.email,
+            password: formData.password
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Gagal register');
+
+        // Auto login setelah register
+        await login(formData.email, formData.password);
+      } else {
+        await login(formData.email, formData.password);
       }
 
-      if (!formData.email.trim()) {
-        throw new Error('Email wajib diisi');
-      }
-      if (!formData.password.trim()) {
-        throw new Error('Password wajib diisi');
-      }
-
-      // For now, we'll use the mock login function for both login and registration
-      await login(formData.email, formData.password);
-      
-      console.log(isLogin ? 'Login berhasil' : 'Registrasi berhasil');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Terjadi kesalahan');
     } finally {
@@ -61,7 +64,6 @@ export const LoginPage: React.FC = () => {
       ...prev,
       [e.target.name]: e.target.value
     }));
-    // Clear error when user starts typing
     if (error) setError('');
   };
 
@@ -77,14 +79,13 @@ export const LoginPage: React.FC = () => {
               {isLogin ? 'Masuk ke Akun' : 'Daftar Akun Baru'}
             </CardTitle>
             <p className="text-gray-600 mt-2">
-              {isLogin 
-                ? 'Silakan masuk untuk menggunakan sistem klasifikasi' 
-                : 'Buat akun baru untuk memulai menggunakan sistem'
-              }
+              {isLogin
+                ? 'Silakan masuk untuk menggunakan sistem klasifikasi'
+                : 'Buat akun baru untuk memulai menggunakan sistem'}
             </p>
           </div>
         </CardHeader>
-        
+
         <CardContent>
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
@@ -111,7 +112,7 @@ export const LoginPage: React.FC = () => {
                 </div>
               </div>
             )}
-            
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <div className="relative">
@@ -128,7 +129,7 @@ export const LoginPage: React.FC = () => {
                 />
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
@@ -145,7 +146,7 @@ export const LoginPage: React.FC = () => {
                 />
               </div>
             </div>
-            
+
             {!isLogin && (
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Konfirmasi Password</Label>
@@ -164,16 +165,16 @@ export const LoginPage: React.FC = () => {
                 </div>
               </div>
             )}
-            
-            <Button 
-              type="submit" 
+
+            <Button
+              type="submit"
               className="w-full bg-blue-600 hover:bg-blue-700"
               disabled={isLoading}
             >
               {isLoading ? 'Memproses...' : (isLogin ? 'Masuk' : 'Daftar')}
             </Button>
           </form>
-          
+
           <div className="mt-6 text-center">
             <button
               onClick={() => {
@@ -188,10 +189,9 @@ export const LoginPage: React.FC = () => {
               }}
               className="text-blue-600 hover:text-blue-700 text-sm font-medium"
             >
-              {isLogin 
-                ? 'Belum punya akun? Daftar di sini' 
-                : 'Sudah punya akun? Masuk di sini'
-              }
+              {isLogin
+                ? 'Belum punya akun? Daftar di sini'
+                : 'Sudah punya akun? Masuk di sini'}
             </button>
           </div>
         </CardContent>
